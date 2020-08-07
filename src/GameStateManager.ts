@@ -1,4 +1,4 @@
-import Field, { FieldLayoutKind, FieldItemState, FieldState } from "./Field";
+import Field, { FieldLayoutKind, FieldState } from "./Field";
 import FieldDispatcher from "./FieldDispatcher";
 import SetFieldStateCommand, { SET_FIELD_STATE_COMMAND_NAME } from "./SetFieldStateCommand";
 
@@ -7,7 +7,7 @@ interface ActionPayload {
   params: Record<any, any>;
 }
 
-enum GameState {
+export enum GameState {
   // 0
   IDLE,
   // 1
@@ -71,6 +71,11 @@ class GameStateManager {
         length: this.field.length,
       },
     }
+  }
+
+  public restart(): void {
+    this.field.reset();
+    this.startGame();
   }
  }
 

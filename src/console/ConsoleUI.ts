@@ -1,7 +1,7 @@
-import GameStateManager from "./GameStateManager";
+import GameStateManager from "../GameStateManager";
 
 import { createInterface, Interface } from 'readline';
-import { SET_FIELD_STATE_COMMAND_NAME } from "./SetFieldStateCommand";
+import { SET_FIELD_STATE_COMMAND_NAME } from "../SetFieldStateCommand";
 import { exit } from "process";
 class ConsoleUI {
 

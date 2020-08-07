@@ -1,6 +1,6 @@
 import ConsoleUI from "./ConsoleUI";
 
-class Application {
+class ConsoleApplication {
  private ui: ConsoleUI;
 
   constructor() {
@@ -13,4 +13,4 @@ class Application {
 
 }
 
-export default Application;
+export default ConsoleApplication;

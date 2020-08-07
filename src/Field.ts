@@ -42,7 +42,7 @@ class Field {
     }
   }
 
-  public isFieldIndexValid(fieldIndex: number) {
+  public isFieldIndexValid(fieldIndex: number): boolean {
     if (!this.fieldLayout[fieldIndex]) {
       return false;
     }
@@ -57,6 +57,8 @@ class Field {
   private getDefaultFieldState() {
     const fieldState = new Array(this.fieldLayout.length);
     fieldState.fill(FieldItemState.NOT_ACTIVE);
+    fieldState[1] = FieldItemState.ACTIVE;
+    fieldState[7] = FieldItemState.ACTIVE;
     return fieldState;
   }
 
