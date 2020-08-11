@@ -16,12 +16,14 @@ class TDAgent(BaseAgent):
         self.discount = agent_info.get("discount")
         # The learning rate or step size parameter (alpha) to use in updates.
         self.step_size = agent_info.get("step_size")
+        # threshold for e-greedy policy
+        self.epsilon = agent_info.get("epsilon")
 
         # Initialize an array of zeros that will hold the values.
         # Recall that the policy can be represented as a (# States, # Actions) array. With the 
         # assumption that this is the case, we can use the first dimension of the policy to
         # initialize the array for values.
-        self.values = np.zeros((self.policy.shape[0],))
+        self.q = np.zeros((self.policy.shape))
         
     def agent_start(self, state):
         """The first method called when the episode starts, called after
@@ -35,6 +37,8 @@ class TDAgent(BaseAgent):
         # the second dimension here when choosing an action.
         action = self.rand_generator.choice(range(self.policy.shape[1]), p=self.policy[state])
         self.last_state = state
+        self.last_aciton = action
+        self.steps = 1
         return action
 
     def agent_step(self, reward, state):
@@ -47,19 +51,24 @@ class TDAgent(BaseAgent):
         Returns:
             The action the agent is taking.
         """
+        if self.rand_generator.rand() < self.epsilon:
+            action = self.rand_generator.choice(range(self.policy.shape[1]), p=self.policy[state])
+        else:
+            action = self.argmax(self.q[state, :])
         # Hint: We should perform an update with the last state given that we now have the reward and
         # next state. We break this into two steps. Recall for example that the Monte-Carlo update 
-        # had the form: V[S_t] = V[S_t] + alpha * (target - V[S_t]), where the target was the return, G_t.
-        target = reward + self.values[state] * self.discount
-        self.values[self.last_state] = self.values[self.last_state] + self.step_size * (target - self.values[self.last_state])
+        # had the form: Q[S_t, A_t] = Q[S_t, A_t] + alpha * (target - Q[S_t, A_t]), where the target was the return, G_t.
+        target = reward + self.q[state, action] * self.discount
+        self.q[self.last_state, self.last_aciton] = self.q[self.last_state, self.last_aciton] + self.step_size * (target - self.q[self.last_state, self.last_aciton])
 
         # Having updated the value for the last state, we now act based on the current 
         # state, and set the last state to be current one as we will next be making an 
         # update with it when agent_step is called next once the action we return from this function 
         # is executed in the environment.
 
-        action = self.rand_generator.choice(range(self.policy.shape[1]), p=self.policy[state])
+        self.last_aciton = action
         self.last_state = state
+        self.steps += 1
 
         return action
 
@@ -73,11 +82,13 @@ class TDAgent(BaseAgent):
         # two steps, computing the target and the update itself that uses the target and the 
         # current value estimate for the state whose value we are updating.
         target = reward
-        self.values[self.last_state] = self.values[self.last_state] + self.step_size * (target - self.values[self.last_state])
+        self.q[self.last_state, self.last_aciton] = self.q[self.last_state, self.last_aciton] + self.step_size * (target - self.q[self.last_state, self.last_aciton])
 
     def agent_cleanup(self):
         """Cleanup done after the agent ends."""
         self.last_state = None
+        self.last_aciton = None
+        self.steps = 0
         
     def agent_message(self, message):
         """A function used to pass information from the agent to the experiment.
@@ -87,6 +98,28 @@ class TDAgent(BaseAgent):
             The response (or answer) to the message.
         """
         if message == "get_values":
-            return self.values
+            return self.q
+        elif message == "get_steps":
+            return self.steps
         else:
             raise Exception("TDAgent.agent_message(): Message not understood!")
+    
+    def argmax(self, q_values):
+        """argmax with random tie-breaking
+        Args:
+            q_values (Numpy array): the array of action-values
+        Returns:
+            action (int): an action with the highest value
+        """
+        top = float("-inf")
+        ties = []
+
+        for i in range(len(q_values)):
+            if q_values[i] > top:
+                top = q_values[i]
+                ties = []
+
+            if q_values[i] == top:
+                ties.append(i)
+
+        return self.rand_generator.choice(ties)

@@ -7,12 +7,6 @@ import numpy as np
 # These methods will be filled in later cells.
 class GridEnvironment(BaseEnvironment):
     def env_init(self, env_info={}):
-        """Setup for the environment called when the experiment first starts.
-        Note:
-            Initialize a tuple with the reward, first state, boolean
-            indicating if it's terminal.
-        """
-        
         # Note, we can setup the following variables later, in env_start() as it is equivalent. 
         # Code is left here to adhere to the note above, but these variables are initialized once more
         # in env_start() [See the env_start() function below.]
@@ -29,8 +23,8 @@ class GridEnvironment(BaseEnvironment):
         # predict values or make decisions (i.e., the environment is non-Markovian.)
         
         # Set the default height to 4 and width to 12 (as in the diagram given above)
-        self.grid_size = env_info.get("grid_size", 3) 
-        self.grid_length = env_info.get("grid_length", 9)
+        self.grid_size = env_info.get("grid_size") 
+        self.grid_length = env_info.get("grid_length")
         self.grid = env_info.get("grid")
         self.grid_state = env_info.get("grid_state")
         # define env info here
@@ -49,15 +43,13 @@ class GridEnvironment(BaseEnvironment):
         reward = -1
         is_terminal = False
         self.grid_state[action] = not self.grid_state[action]
-        if np.array_equal(self.grid_state, np.ones(self.grid_length)):
+        if np.array_equal(self.grid_state, np.ones(self.grid_length).astype(int)):
             is_terminal = True 
         self.reward_state_term = (reward, self.state(), is_terminal)
         return self.reward_state_term
-    def env_end(self, reward):
-        raise NotImplementedError
-        
-    def env_cleanup(self, reward):
-        self.grid_state = np.zeros(self.grid_length)
+
+    def env_cleanup(self):
+        self.grid_state = np.zeros(self.grid_length).astype(int)
     
     def env_message(self, message):
         if message == "get_grid_state":
