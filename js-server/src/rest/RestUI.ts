@@ -2,6 +2,7 @@ import GameStateManager, { GameState } from "../GameStateManager";
 import { SET_FIELD_STATE_COMMAND_NAME } from "../SetFieldStateCommand";
 import express, { Express } from 'express';
 import { Server } from "http";
+import cors from 'cors';
 
 class RestUI {
 
@@ -28,6 +29,7 @@ class RestUI {
   private createServer() {
     const app = express();
     app.use(express.json());
+    app.use(cors());
     // request logger
     app.use((req, res, next) => {
       console.log(`[${req.method}] ${req.url}`);
